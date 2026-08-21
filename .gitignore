@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.env
+.env.local
+*.tsbuildinfo
+tailwind.config.js
+tailwind.config.d.ts
+vite.config.js
+vite.config.d.ts
+src/tokens/*.js
+src/tokens/*.d.ts
