@@ -51,7 +51,7 @@ export function ProgressIndicator({ steps, activeKey, className }: ProgressIndic
                       : 'size-28 bg-surface-container-grey',
                 ].join(' ')}
               >
-                <span className={state === 'active' ? 'size-20 text-white' : 'size-16 text-white'}>
+                <span className={state === 'active' ? 'size-20 text-white' : state === 'completed' ? 'size-16 text-white' : 'size-16 text-text-grey-dark'}>
                   {step.icon ?? <IconGear className="size-full" />}
                 </span>
               </div>

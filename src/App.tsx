@@ -50,6 +50,7 @@ export default function App() {
   const [hashtagInput, setHashtagInput] = useState('')
   const [otp, setOtp] = useState('')
   const [audiences, setAudiences] = useState<string[]>(['insta'])
+  const [contentNiche, setContentNiche] = useState<string[]>([])
   const [platform, setPlatform] = useState('instagram')
   const [chipSelected, setChipSelected] = useState(true)
   const [toggleView, setToggleView] = useState('upload')
@@ -149,6 +150,19 @@ export default function App() {
             value={audiences}
             onChange={setAudiences}
           />
+          <Dropdown
+            label="Content Niche"
+            type="single-select"
+            placeholder="Select content niche"
+            options={[
+              { label: 'Beauty & Skincare', value: 'beauty' },
+              { label: 'Lifestyle', value: 'lifestyle' },
+              { label: 'Daily Vlogs', value: 'vlogs' },
+            ]}
+            value={contentNiche}
+            onChange={setContentNiche}
+            className="mt-16"
+          />
         </div>
 
         <h2 className={`${luna.titleSmall600} mt-16 text-text-primary`}>Input Field — OTP</h2>
@@ -167,11 +181,12 @@ export default function App() {
 
         <h2 className={`${luna.titleSmall600} mt-16 text-text-primary`}>Chips / Status Chip</h2>
         <div className="flex flex-wrap items-center gap-12">
-          <Chip selected={chipSelected} onClick={() => setChipSelected((s) => !s)}>
+          <Chip state={chipSelected ? 'selected' : 'default'} onClick={() => setChipSelected((s) => !s)}>
             Myntra
           </Chip>
-          <Chip>Nykaa</Chip>
-          <Chip disabled>Boat</Chip>
+          <Chip state="unselected">Nykaa</Chip>
+          <Chip state="inactive">Lifestyle</Chip>
+          <Chip state="disabled">Boat</Chip>
           <StatusChip variant="positive">Approved</StatusChip>
           <StatusChip variant="negative">Rejected</StatusChip>
           <StatusChip variant="processing">Processing</StatusChip>
@@ -323,10 +338,8 @@ export default function App() {
         <h2 className={`${luna.titleSmall600} mt-16 text-text-primary`}>Creator Card</h2>
         <div className="flex flex-wrap gap-16">
           <CreatorCard
-            platform="instagram"
             photo={<PhotoPlaceholder label="Supriya P" className="size-full" />}
             creatorName="Supriya P"
-            handleLabel="supriya123_456"
             verifiedContact
             gifted
             lehlahUser
@@ -366,8 +379,8 @@ export default function App() {
             },
           ]}
           details={[
-            { icon: <IconGear className="size-full" />, value: 'Tiruvananthapuram' },
-            { icon: <IconGear className="size-full" />, value: 'Malayalam, Hindi +1' },
+            { icon: <IconGear className="size-full" />, value: 'Tiruvananthapuram', tooltip: 'Tiruvananthapuram' },
+            { icon: <IconGear className="size-full" />, value: 'Malayalam, Hindi +1', tooltip: 'Malayalam, Hindi, Marathi' },
             { icon: <IconGear className="size-full" />, value: 'Female' },
             { icon: <IconGear className="size-full" />, value: '₹5,000 - ₹15,000' },
           ]}
@@ -496,6 +509,17 @@ export default function App() {
               fields: [
                 { label: 'Total sales', placeholder: 'Select total sales range' },
                 { label: 'Date range', placeholder: 'Select the date range' },
+              ],
+            },
+            {
+              kind: 'select',
+              key: 'gender',
+              title: 'Gender',
+              placeholder: 'Select Gender',
+              options: [
+                { key: 'male', label: 'Male' },
+                { key: 'female', label: 'Female' },
+                { key: 'non-binary', label: 'Non-Binary' },
               ],
             },
           ]}

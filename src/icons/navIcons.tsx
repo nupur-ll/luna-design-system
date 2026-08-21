@@ -4,7 +4,6 @@ import {
   IconChartBar,
   IconFunnelSimple,
   IconUserSound,
-  IconGear,
   IconUserCircleGear,
   IconUserCircle,
 } from './common'
@@ -29,11 +28,11 @@ import {
  * blank — this was tried on multiple separate instances (see CLAUDE.md's
  * "Icon assets" section) and isn't a matter of picking a better instance.
  *
- * `IconGift` and `IconCaretLeft`/`IconCaretRight` are exceptions for the
- * same underlying reason — a real, verified-by-screenshot one, not a
- * guess: a PNG asset can't respond to `currentColor`, and these three
- * are used somewhere that genuinely needs dynamic color, not just a
- * leftover placeholder default.
+ * `IconGift`, `IconCaretLeft`/`IconCaretRight`, and `IconGear` are
+ * exceptions for the same underlying reason — a real, verified-by-
+ * screenshot one, not a guess: a PNG asset can't respond to
+ * `currentColor`, and these four are used somewhere that genuinely needs
+ * dynamic color, not just a leftover placeholder default.
  * - `IconGift`: CreatorCard renders it with `text-brand-primary` to tint
  *   it the same purple as the adjacent "L." lehlahUser badge.
  * - `IconCaretLeft`/`IconCaretRight`: Pagination's prev/next buttons use
@@ -43,14 +42,20 @@ import {
  *   chevron render grey-on-purple with barely any contrast (caught by
  *   screenshotting Pagination after the swap, not assumed). Both stay
  *   hand-drawn `currentColor` SVGs.
- * The real extracted assets for all three are still available from
+ * - `IconGear`: ProgressIndicator's ".Progress Tab" sub-component actually
+ *   uses two different extracted gear glyphs depending on state — white
+ *   on the Active/Completed purple circles, a muted tone on the Default
+ *   grey circle. The extracted `src/icons/common` PNG is the white
+ *   variant (confirmed by opening the file, not assumed), which is wrong
+ *   for Default. Hand-drawn here so ProgressIndicator can set the color
+ *   per state instead.
+ * The real extracted assets for all four are still available from
  * `src/icons/common` for contexts that don't need dynamic color.
  */
 export const IconSearch = IconMagnifyingGlass
 export const IconChart = IconChartBar
 export const IconFunnel = IconFunnelSimple
 export const IconChat = IconUserSound
-export { IconGear }
 export const IconUserGear = IconUserCircleGear
 export { IconUserCircle }
 
@@ -87,6 +92,30 @@ export function IconCaretRight(props: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
       <path d="M7.5 4.5L13 10l-5.5 5.5" />
+    </svg>
+  )
+}
+
+/** Simple structural mark, hand-drawn like the checkmark/caret glyphs elsewhere — CreatorCard's Default add-button icon. */
+export function IconPlus(props: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M10 4v12M4 10h12" />
+    </svg>
+  )
+}
+
+export function IconGear(props: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="10" cy="10" r="5" />
+      <circle cx="10" cy="10" r="2" />
+      <path d="M15 10h1.3" />
+      <path d="M12.5 5.67l.65-1.12" />
+      <path d="M7.5 5.67l-.65-1.12" />
+      <path d="M5 10H3.7" />
+      <path d="M7.5 14.33l-.65 1.12" />
+      <path d="M12.5 14.33l.65 1.12" />
     </svg>
   )
 }

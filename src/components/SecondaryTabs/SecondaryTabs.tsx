@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 /**
  * SecondaryTabs — Luna Design System "Secondary Tab/First", node
  * 29288:112150, built from the underlying ".Secondary-Tab-chip"
@@ -8,6 +10,7 @@ export interface SecondaryTabItem {
   key: string
   label: string
   count?: number
+  icon?: ReactNode
 }
 
 export interface SecondaryTabsProps {
@@ -42,6 +45,7 @@ export function SecondaryTabs({ items, activeKey, onChange, className }: Seconda
               active ? 'bg-white font-semibold text-text-secondary shadow-container-2' : 'font-medium text-text-grey-dark',
             ].join(' ')}
           >
+            {item.icon && <span className="size-20 shrink-0">{item.icon}</span>}
             <span>{item.label}</span>
             {item.count != null && <span>({item.count})</span>}
           </button>

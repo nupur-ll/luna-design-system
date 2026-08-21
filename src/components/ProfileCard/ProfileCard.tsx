@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button } from '../Button'
+import { Tooltip } from '../Tooltip'
 import { IconCheckCircle } from '../../icons/common'
 
 /**
@@ -19,10 +20,19 @@ import { IconCheckCircle } from '../../icons/common'
  * `{ icon, value }` and lets the consumer supply as many as apply —
  * closer to how Table/Dropdown/Navbar already turn Figma's fixed
  * instance lists into generic arrays.
+ *
+ * Figma's edge cases show a `.Tooltip` on hover for a couple of specific
+ * fields — 2+ languages, a long city name, a long agency name — rather
+ * than every field, so `tooltip` is opt-in per detail/content row instead
+ * of automatic. The creator name also clamps to 2 lines (`line-clamp-2`)
+ * rather than the single-line `truncate` this used before, per that same
+ * edge-case note.
  */
 export interface ProfileCardDetail {
   icon: ReactNode
   value: ReactNode
+  /** Shown in a Tooltip on hover — for values (a long city/agency name) that truncate and need the full text on demand. */
+  tooltip?: ReactNode
 }
 
 export interface ProfileCardPlatform {
@@ -41,6 +51,8 @@ export interface ProfileCardContact extends ProfileCardDetail {
 export interface ProfileCardContentRow {
   label: string
   values: string[]
+  /** Shown in a Tooltip on hover — for rows (2+ languages) whose full value list needs to be available even when the line truncates. */
+  tooltip?: ReactNode
 }
 
 export interface ProfileCardProps {
@@ -57,11 +69,12 @@ export interface ProfileCardProps {
   className?: string
 }
 
-function DetailCell({ icon, value }: ProfileCardDetail) {
+function DetailCell({ icon, value, tooltip }: ProfileCardDetail) {
+  const valueSpan = <span className="truncate text-[12px] font-medium leading-[16px] tracking-[-0.3px] text-text-primary">{value}</span>
   return (
     <div className="flex flex-1 items-center gap-4 px-8 py-4">
       <span className="flex size-14 shrink-0 items-center justify-center text-text-primary">{icon}</span>
-      <span className="truncate text-[12px] font-medium leading-[16px] tracking-[-0.3px] text-text-primary">{value}</span>
+      {tooltip ? <Tooltip text={tooltip}>{valueSpan}</Tooltip> : valueSpan}
     </div>
   )
 }
@@ -87,9 +100,9 @@ export function ProfileCard({
       <div className="relative flex h-[326px] w-full flex-col justify-end overflow-hidden rounded-8 p-12">
         <div className="absolute inset-0 [&>*]:size-full [&>*]:object-cover">{photo}</div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-overlay-black-80" />
-        <div className="relative flex w-full items-center gap-12">
-          <div className="flex flex-1 items-center gap-4 text-[14px] font-bold leading-[20px] tracking-[0] text-white">
-            <span className="truncate">{name}</span>
+        <div className="relative flex w-full items-start gap-12">
+          <div className="flex flex-1 items-start gap-4 text-[14px] font-bold leading-[20px] tracking-[0] text-white">
+            <span className="line-clamp-2">{name}</span>
             {verified && <IconCheckCircle className="size-16 shrink-0" />}
           </div>
           {onAddToList && (
@@ -155,10 +168,9 @@ export function ProfileCard({
 
         {content.length > 0 && (
           <div className="flex w-full flex-col gap-8">
-            {content.map((row, index) => (
-              <div key={index} className="flex flex-col gap-2 px-8">
-                <p className="text-[12px] font-semibold leading-[16px] tracking-[-0.3px] text-text-grey">{row.label}</p>
-                <p className="flex items-center gap-6 text-[12px] font-medium leading-[16px] tracking-[-0.3px] text-text-primary">
+            {content.map((row, index) => {
+              const valuesLine = (
+                <p className="flex min-w-0 items-center gap-6 truncate text-[12px] font-medium leading-[16px] tracking-[-0.3px] text-text-primary">
                   {row.values.map((value, valueIndex) => (
                     <span key={valueIndex} className="flex items-center gap-6">
                       {valueIndex > 0 && <span className="size-4 shrink-0 rounded-full bg-text-grey" />}
@@ -166,8 +178,14 @@ export function ProfileCard({
                     </span>
                   ))}
                 </p>
-              </div>
-            ))}
+              )
+              return (
+                <div key={index} className="flex flex-col gap-2 px-8">
+                  <p className="text-[12px] font-semibold leading-[16px] tracking-[-0.3px] text-text-grey">{row.label}</p>
+                  {row.tooltip ? <Tooltip text={row.tooltip}>{valuesLine}</Tooltip> : valuesLine}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

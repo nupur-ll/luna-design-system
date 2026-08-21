@@ -19,17 +19,26 @@ import { IconCaretDown } from '../../icons/formIcons'
  * (brand names, city names, price bands) that's obviously per-tenant
  * content, not part of the component.
  *
- * Every one of those sections is actually one of four repeating shapes —
- * a row of icon+label+ToggleSwitch, a titled checkbox list with an
- * optional "Show More" expand, a titled pair of min/max numeric inputs,
- * or a titled pair of select-style dropdown inputs — Figma just repeats
- * the same four shapes with different content. So rather than modeling
- * "Brands" and "Content Niche" and "Creator City" as separate anything,
- * this is a `sections: FilterSection[]` list where each entry is a
- * `{ kind: 'toggles' | 'checkboxes' | 'range' | 'select-range', ... }`
+ * Every one of those sections is actually one of a handful of repeating
+ * shapes — a row of icon+label+ToggleSwitch, a titled checkbox list with
+ * an optional "Show More" expand, a titled pair of min/max numeric
+ * inputs, a titled pair of select-style dropdown inputs, or (added when
+ * the "compact"/"compact-selected" variants surfaced it) a single
+ * closed-field dropdown trigger — Figma just repeats the same shapes with
+ * different content. So rather than modeling "Brands" and "Content
+ * Niche" and "Creator City" as separate anything, this is a
+ * `sections: FilterSection[]` list where each entry is a
+ * `{ kind: 'toggles' | 'checkboxes' | 'range' | 'select-range' | 'select', ... }`
  * describing one of those shapes — the consumer supplies which sections
  * exist and what's in them, same treatment Navbar/Table/Dropdown give
  * Figma's other fixed instance lists.
+ *
+ * The `select` kind's closed field (`Select X` placeholder / purple-tinted
+ * "Selected (N)" when filled) is confirmed from Figma's "compact" variant
+ * screenshots; its open option-list panel wasn't shown in those pulls, so
+ * it's built here as a checkbox list (same convention as the `checkboxes`
+ * kind) rather than asserted against a specific Figma panel — flagging
+ * that inference rather than presenting it as directly observed.
  */
 export interface ToggleFilterItem {
   key: string
@@ -47,6 +56,7 @@ export type FilterSection =
   | { kind: 'checkboxes'; key: string; title: string; options: CheckboxFilterOption[]; initialVisibleCount?: number }
   | { kind: 'range'; key: string; title: string; minLabel: string; maxLabel: string; minPlaceholder?: string; maxPlaceholder?: string }
   | { kind: 'select-range'; key: string; title: string; fields: { label: string; placeholder: string }[] }
+  | { kind: 'select'; key: string; title: string; placeholder: string; options: CheckboxFilterOption[] }
 
 export interface DiscoveryFilterPanelProps {
   title?: string
@@ -105,6 +115,55 @@ function CheckboxSection({
             {expanded ? 'Show Less' : 'Show More'}
             <IconCaretDown className={`size-16 transition-transform ${expanded ? 'rotate-180' : ''}`} />
           </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SelectSection({
+  section,
+  value,
+  onChange,
+}: {
+  section: Extract<FilterSection, { kind: 'select' }>
+  value: string[]
+  onChange: (value: string[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  function toggle(optionKey: string) {
+    onChange(value.includes(optionKey) ? value.filter((k) => k !== optionKey) : [...value, optionKey])
+  }
+
+  return (
+    <div className="flex w-full flex-col gap-8">
+      <SectionHeading title={section.title} />
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className={[
+            'flex h-44 w-full items-center justify-between gap-8 rounded-8 border px-16 py-12 text-left text-[14px] font-medium leading-[20px]',
+            value.length > 0 ? 'border-transparent bg-overlay-brand-8 font-semibold text-brand-primary' : 'border-border-grey bg-white text-text-grey',
+          ].join(' ')}
+        >
+          {value.length > 0 ? `Selected (${value.length})` : section.placeholder}
+          <IconCaretDown className={`size-20 shrink-0 text-text-grey transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {open && (
+          <div className="absolute top-full z-10 mt-4 flex max-h-[184px] w-full flex-col gap-2 overflow-y-auto rounded-8 border-xs border-border-grey bg-white p-8 shadow-container-4">
+            {section.options.map((option) => (
+              <Checkbox
+                key={option.key}
+                label={option.label}
+                checked={value.includes(option.key)}
+                onChange={() => toggle(option.key)}
+                className="h-36 w-full shrink-0 justify-start rounded-4 px-8 hover:bg-surface-container-light-grey"
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -177,6 +236,17 @@ export function DiscoveryFilterPanel({ title = 'Filter by', sections, values, on
                 />
               </div>
             </div>
+          )
+        }
+
+        if (section.kind === 'select') {
+          return (
+            <SelectSection
+              key={index}
+              section={section}
+              value={(values[section.key] as string[]) ?? []}
+              onChange={(value) => onChange(section.key, value)}
+            />
           )
         }
 

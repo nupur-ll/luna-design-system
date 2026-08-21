@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react'
-import { IconCheckCircle, IconInstagram, IconYoutube } from '../../icons/common'
-import { IconGift } from '../../icons/navIcons'
+import { IconCheckCircle } from '../../icons/common'
+import { IconGift, IconPlus } from '../../icons/navIcons'
 
 /**
  * CreatorCard — Luna Design System "Creator Card", node 29276:4298
  * (documented in the file under both "Creator Card" and "Discovery Card"
- * — same component, two doc-page names). Figma's `type` variant
- * (Instagram/Youtube) mostly swaps which platform badges show and what
- * the stat labels read ("Followers" vs "Subscribers") — modeled here as
- * a `platform` prop rather than two components, matching Chip/StatusChip's
- * collapse-similar-variants precedent.
+ * — same component, two doc-page names).
+ *
+ * Platform distinction (badge pair + handle row) was intentionally
+ * dropped — confirmed directly rather than inferred — so this card no
+ * longer takes a `platform` prop; the top-right control is real `selected`
+ * state instead (Default: a "+" add button; Selected: a green CheckCircle
+ * badge with no button chrome).
  *
  * Figma's stat row is always exactly 3 cells (e.g. Followers / Eng. Rate /
  * Median Views) with dividers between — kept as a fixed 3-tuple prop
@@ -22,12 +24,9 @@ export interface CreatorCardStat {
 }
 
 export interface CreatorCardProps {
-  platform: 'instagram' | 'youtube'
   /** The cover photo — consumer-supplied <img>, same slot convention as ProfileCard's `photo`. */
   photo: ReactNode
   creatorName: string
-  /** "@handle" for Instagram, or "Channel Name / @handle" for YouTube. */
-  handleLabel: ReactNode
   verifiedContact?: boolean
   gifted?: boolean
   lehlahUser?: boolean
@@ -39,10 +38,8 @@ export interface CreatorCardProps {
 }
 
 export function CreatorCard({
-  platform,
   photo,
   creatorName,
-  handleLabel,
   verifiedContact,
   gifted,
   lehlahUser,
@@ -61,41 +58,24 @@ export function CreatorCard({
         .filter(Boolean)
         .join(' ')}
     >
-      <div className="relative flex aspect-square w-full flex-col items-start justify-between overflow-hidden p-12">
+      <div className="relative flex aspect-square w-full flex-col items-start justify-end overflow-hidden p-12">
         <div className="absolute inset-0 [&>*]:size-full [&>*]:object-cover">{photo}</div>
-        <div className="relative flex w-full items-start justify-between">
-          {/*
-           * Figma shows both platform badges here regardless of `type`
-           * (a creator can be cross-platform), with the active platform
-           * getting a white rounded highlight and the other sitting
-           * plain in the shared grey pill — simplified from Figma's four
-           * separate per-variant conditionals down to one ordered pair.
-           */}
-          <div className="flex items-center overflow-hidden rounded-8 bg-surface-container-grey">
-            {(platform === 'instagram' ? [IconInstagram, IconYoutube] : [IconYoutube, IconInstagram]).map((Icon, index) => (
-              <span key={index} className={`flex size-24 items-center justify-center ${index === 0 ? 'rounded-8 bg-white' : ''}`}>
-                <Icon className="size-16" />
-              </span>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={onToggleSelect}
-            aria-pressed={selected}
-            className={[
-              'flex size-[25px] items-center justify-center rounded-2 border-[2.769px] bg-white',
-              selected ? 'border-brand-primary bg-brand-primary' : 'border-border-grey',
-            ].join(' ')}
-          >
-            {selected && (
-              <svg viewBox="0 0 16 16" className="size-14 text-white">
-                <path d="M3 8.5l3.2 3.2L13 4.5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
-          </button>
+        <div className="relative flex w-full items-start justify-end">
+          {selected ? (
+            <IconCheckCircle className="size-36 shrink-0" />
+          ) : (
+            <button
+              type="button"
+              onClick={onToggleSelect}
+              aria-pressed={selected}
+              className="flex size-28 shrink-0 items-center justify-center rounded-4 border border-border-grey bg-white"
+            >
+              <IconPlus className="size-16 text-text-primary" />
+            </button>
+          )}
         </div>
         {verifiedContact && (
-          <div className="relative flex items-center gap-4 rounded-12 border-xs border-success-primary bg-success-light px-8 py-4">
+          <div className="relative mt-8 flex items-center gap-4 rounded-12 border-xs border-success-primary bg-success-light px-8 py-4">
             <IconCheckCircle className="size-14" />
             <span className="text-[11px] font-medium text-success-primary">Verified Contact</span>
           </div>
@@ -128,24 +108,16 @@ export function CreatorCard({
           )}
         </div>
 
-        <div className="h-0.5 w-full bg-border-light-grey" />
-
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-center gap-4">
-            {platform === 'instagram' ? <IconInstagram className="size-14" /> : <IconYoutube className="size-14" />}
-            <p className="truncate text-[11px] font-semibold leading-[16px] text-text-secondary">{handleLabel}</p>
-          </div>
-          <div className="flex w-full items-start rounded-8 bg-overlay-brand-4 px-2 py-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="flex flex-1 items-center">
-                {index > 0 && <div className="h-16 w-0.5 shrink-0 bg-border-light-grey" />}
-                <div className="flex flex-1 flex-col items-center gap-2 p-4 text-center">
-                  <p className="text-[12px] font-bold leading-[16px] tracking-[-0.3px] text-text-secondary">{stat.value}</p>
-                  <p className="text-[10px] leading-[16px] text-text-grey">{stat.label}</p>
-                </div>
+        <div className="flex w-full items-start rounded-8 bg-overlay-grey-16 px-2 py-8">
+          {stats.map((stat, index) => (
+            <div key={index} className="flex flex-1 items-center">
+              {index > 0 && <div className="h-16 w-0.5 shrink-0 bg-border-light-grey" />}
+              <div className="flex flex-1 flex-col items-center gap-2 p-4 text-center">
+                <p className="text-[12px] font-bold leading-[16px] tracking-[-0.3px] text-text-secondary">{stat.value}</p>
+                <p className="text-[10px] leading-[16px] text-text-grey">{stat.label}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

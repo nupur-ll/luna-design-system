@@ -20,6 +20,10 @@ import type { ReactNode } from 'react'
 export interface MenuButtonOption {
   label: string
   value: string
+  /** Leading glyph shown before the label in the open panel — same slot convention as Button's leftIcon. */
+  icon?: ReactNode
+  /** Small 24px rounded brand/org logo shown before the label (after `icon`, if both are set) — e.g. for a brand switcher. */
+  avatar?: ReactNode
 }
 
 export interface MenuButtonProps {
@@ -67,8 +71,14 @@ export function MenuButton({ label, options, value, onChange, leftIcon, classNam
                 onChange?.(option.value)
                 setOpen(false)
               }}
-              className="flex h-36 w-full items-center rounded-4 px-4 text-left text-[14px] font-semibold leading-[20px] text-text-primary hover:bg-surface-container-light-grey"
+              className="flex h-36 w-full items-center gap-8 rounded-4 px-4 text-left text-[14px] font-semibold leading-[20px] text-text-primary hover:bg-surface-container-light-grey"
             >
+              {option.icon && <span className="size-20 shrink-0">{option.icon}</span>}
+              {option.avatar && (
+                <span className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-4 border-xs border-border-light-grey [&>*]:size-full [&>*]:object-cover">
+                  {option.avatar}
+                </span>
+              )}
               {option.label}
             </button>
           ))}

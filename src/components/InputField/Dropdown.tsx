@@ -17,6 +17,13 @@ import { Checkbox } from '../Checkbox'
  * `maxVisibleTags`, same convention as InputField's tag list, since that's
  * the closest documented pattern in this file — flagging that inference
  * rather than presenting it as directly observed.
+ *
+ * Figma's ".Dropdown-variations" sub-component also has a "Single-select"
+ * type (node 29087:48626) — same panel, but no checkboxes, and picking an
+ * option replaces the value and closes the panel instead of accumulating.
+ * `type` switches between the two; `value`/`onChange` stay array-shaped
+ * either way (single-select just yields a 0-or-1-length array) so this
+ * doesn't need a second, differently-typed prop pair.
  */
 export interface DropdownOption {
   label: string
@@ -28,6 +35,7 @@ export interface DropdownProps {
   options: DropdownOption[]
   value: string[]
   onChange: (value: string[]) => void
+  type?: 'multi-select' | 'single-select'
   required?: boolean
   placeholder?: string
   searchPlaceholder?: string
@@ -42,6 +50,7 @@ export function Dropdown({
   options,
   value,
   onChange,
+  type = 'multi-select',
   required,
   placeholder = 'Select an option',
   searchPlaceholder = 'Search here',
@@ -53,6 +62,7 @@ export function Dropdown({
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const listId = useId()
+  const isMultiSelect = type === 'multi-select'
 
   const filtered = options.filter((option) => option.label.toLowerCase().includes(query.trim().toLowerCase()))
   const selected = options.filter((option) => value.includes(option.value))
@@ -60,6 +70,11 @@ export function Dropdown({
   const overflowCount = selected.length - visible.length
 
   function toggle(optionValue: string) {
+    if (!isMultiSelect) {
+      onChange([optionValue])
+      setOpen(false)
+      return
+    }
     if (value.includes(optionValue)) onChange(value.filter((v) => v !== optionValue))
     else onChange([...value, optionValue])
   }
@@ -126,15 +141,26 @@ export function Dropdown({
             {filtered.length === 0 ? (
               <p className="px-8 py-12 text-[12px] leading-[16px] text-text-grey">No matches</p>
             ) : (
-              filtered.map((option) => (
-                <Checkbox
-                  key={option.value}
-                  label={option.label}
-                  checked={value.includes(option.value)}
-                  onChange={() => toggle(option.value)}
-                  className="h-44 w-full shrink-0 justify-start rounded-4 px-8 hover:bg-surface-container-light-grey [&_span:last-child]:font-semibold"
-                />
-              ))
+              filtered.map((option) =>
+                isMultiSelect ? (
+                  <Checkbox
+                    key={option.value}
+                    label={option.label}
+                    checked={value.includes(option.value)}
+                    onChange={() => toggle(option.value)}
+                    className="h-44 w-full shrink-0 justify-start rounded-4 px-8 hover:bg-surface-container-light-grey [&_span:last-child]:font-semibold"
+                  />
+                ) : (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => toggle(option.value)}
+                    className="flex h-44 w-full shrink-0 items-center rounded-4 px-8 text-left text-[14px] font-semibold leading-[20px] text-text-primary hover:bg-surface-container-light-grey"
+                  >
+                    {option.label}
+                  </button>
+                ),
+              )
             )}
           </div>
         </div>

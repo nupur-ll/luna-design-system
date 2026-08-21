@@ -17,6 +17,8 @@ export interface PageHeaderProps {
   title: string
   /** Defaults to a placeholder user-circle icon. */
   icon?: ReactNode
+  /** The 44px brand/org logo shown before the icon+title block — consumer-supplied <img>, same slot convention as Navbar's orgAvatar. */
+  brandLogo?: ReactNode
   subtext?: string
   backButton?: boolean
   onBack?: () => void
@@ -25,7 +27,7 @@ export interface PageHeaderProps {
   className?: string
 }
 
-export function PageHeader({ title, icon, subtext, backButton, onBack, actions, className }: PageHeaderProps) {
+export function PageHeader({ title, icon, brandLogo, subtext, backButton, onBack, actions, className }: PageHeaderProps) {
   return (
     <header
       className={[
@@ -45,6 +47,11 @@ export function PageHeader({ title, icon, subtext, backButton, onBack, actions, 
           >
             <IconCaretLeft className="size-24 text-text-primary" />
           </button>
+        )}
+        {brandLogo && (
+          <span className="flex size-44 shrink-0 items-center justify-center overflow-hidden rounded-8 border-xs border-border-light-grey [&>*]:size-full [&>*]:object-cover">
+            {brandLogo}
+          </span>
         )}
         <div className="flex min-w-0 items-center gap-12">
           <span className="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-full">
